@@ -65,6 +65,12 @@ import HomogenizeForm from "./components/forms/HomogenizeForm";
 const homogenization_api_url = "https://homogenize.fly.dev/homogenize";
 // const homogenization_api_url = "http://127.0.0.1:5000/homogenize";
 
+var startTime = performance.now();
+var endTime = performance.now();
+var startPauseTime = performance.now();
+var endPauseTime = performance.now();
+var pauseTimes = 0;
+
 var options = {
   compact: true,
   ignoreComment: true,
@@ -74,6 +80,7 @@ var options = {
 var progBarRate = 3;
 var isClickedSynapse = false;
 var isHover = true;
+var isTestingRunningTime = true;
 var srcDel = "";
 var dstDel = "";
 
@@ -307,7 +314,14 @@ function App() {
     setHasEnded(true);
     setIsPlaying(false);
     console.log("alert from simulationEnd");
-    alert("Simulation has ended.");
+    // alert("Simulation has ended.");
+    if (isTestingRunningTime) {
+      endTime = performance.now();
+      const runningTime = endTime - startTime - pauseTimes;
+      console.log(
+        `The function took ${runningTime} milliseconds to run with pause times ${pauseTimes}.`
+      );
+    }
   };
 
   const showError = (text) => {
@@ -750,12 +764,16 @@ function App() {
   }
 
   function handlePlay() {
+    if (isTestingRunningTime) {
+      startTime = performance.now();
+      pauseTimes = 0;
+    }
     if (!hasEnded) {
       console.log(`isPlaying before ${isPlaying}`);
       setIsPlaying((p) => !p);
       console.log(`isPlaying after ${isPlaying}`);
     } else {
-      alert("Simulation has ended.");
+      // alert("Simulation has ended.");
     }
   }
   const renderTooltip = (props) => (
@@ -803,9 +821,22 @@ function App() {
     setShowChooseRuleModal(true);
     if (setShowChooseRuleModal) {
       setIsPlaying(false); //pauses the graph playing while choosing rule
+      if (isTestingRunningTime) {
+        startPauseTime = performance.now();
+      }
     }
   };
   const handleChosenRules = (data) => {
+    if (isTestingRunningTime) {
+      endPauseTime = performance.now();
+      const runningPauseTime = endPauseTime - startPauseTime;
+      // alert(runningPauseTime);
+      console.log(
+        `The pause function took ${runningPauseTime} milliseconds to run.`
+      );
+      pauseTimes += runningPauseTime;
+    }
+
     handleCloseChooseRuleModal();
     setNeurons((draft) => {
       for (var j in draft) {
@@ -821,7 +852,7 @@ function App() {
         }
       }
     });
-    //setIsPlaying(true); // continue playing after choosing rule
+    setIsPlaying(true); // continue playing after choosing rule
   };
 
   const onNullForward = async () => {
@@ -869,7 +900,7 @@ function App() {
         `Local storage space used: ${JSON.stringify(localStorage).length * 2}`
       );
     } else {
-      alert("Simulation has ended.");
+      // alert("Simulation has ended.");
     }
   };
 
@@ -895,12 +926,15 @@ function App() {
     progBarRate = simu_speed / 1000;
     console.log("Simu speed", simu_speed);
     if (isPlaying) {
-      var interval = setInterval(() => {
-        onIntervalStepRef.current();
-      }, simu_speed); /// simulation speed
+      var interval = setInterval(
+        () => {
+          onIntervalStepRef.current();
+        },
+        isTestingRunningTime ? 0 : simu_speed
+      ); /// simulation speed
     }
     return () => clearInterval(interval);
-  }, [isPlaying, onIntervalStepRef]);
+  }, [isPlaying, onIntervalStepRef, isTestingRunningTime]);
 
   useEffect(() => {
     if (showChooseRuleModal) {
@@ -969,6 +1003,10 @@ function App() {
     //await setIsHover(isHover);
     console.log("isHover is", isHover);
     return isHover;
+  }
+
+  function checkIsTestingRunningTime() {
+    return isTestingRunningTime;
   }
 
   function sliderThumbLabelFormat(value) {
@@ -1079,6 +1117,16 @@ function App() {
                     defaultChecked={isHover}
                     onChange={() => {
                       isHover = !isHover;
+                    }}
+                  />
+                </Form>
+                <Form>
+                  <Form.Check
+                    type="checkbox"
+                    label="Test simulation running time"
+                    defaultChecked={isTestingRunningTime}
+                    onChange={() => {
+                      isTestingRunningTime = !isTestingRunningTime;
                     }}
                   />
                 </Form>
@@ -1337,6 +1385,7 @@ function App() {
               setNeurons={setNeurons}
               splitRules={splitRules}
               checkIsHover={checkIsHover}
+              checkIsTestingRunningTime={checkIsTestingRunningTime}
               handleShowEditSynapseModal={handleShowEditSynapseModal}
               handleShowHomogenizeModal={handleShowHomogenizeModal}
               handleShowDeleteSynapseModal={handleShowDeleteSynapseModal}

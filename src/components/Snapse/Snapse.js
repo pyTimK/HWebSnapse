@@ -25,6 +25,7 @@ const Snapse = ({
   setNeurons,
   splitRules,
   checkIsHover,
+  checkIsTestingRunningTime,
   handleShowEditSynapseModal,
   handleShowHomogenizeModal,
   handleShowDeleteSynapseModal,
