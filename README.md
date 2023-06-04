@@ -1,6 +1,8 @@
-The extended WebSnapse application can be accessed in **https://nccruel.github.io/websnapse_extended/#/**.
+# Homogenisation WebSnapse (HWebSnapse)
+This is an extended version of the [WebSnapse v2.0](https://nccruel.github.io/websnapse_extended/#/) that incorporates the Homogenization Algorithms proposed in the paper of [Tristan, et. al.](https://ssrn.com/abstract=4250783).
 
-# Requirements
+
+## Requirements
 - Install [node and npm](https://nodejs.org/en/download/). You may type `npm install` in the terminal to install _npm_.
 - Install [yarn](https://classic.yarnpkg.com/en/docs/install/#windows-stable) (Use command: `npm install --global yarn`)
 - Install the libraries for the project by going to the directory where the
